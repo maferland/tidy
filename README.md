@@ -8,6 +8,10 @@
 
 ---
 
+<p align="center">
+  <img src="assets/popover.png" width="400" alt="Tidy menu bar popover showing transforms and status">
+</p>
+
 ## Why?
 
 Text copied from terminals, markdown editors, and AI tools arrives full of formatting artifacts: soft-wrapped lines with leading spaces, multiple consecutive spaces, trailing whitespace, and excessive blank lines. Pasting into Google Docs or Slack produces messy results.
