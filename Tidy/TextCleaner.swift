@@ -5,8 +5,8 @@ struct CleanResult: Equatable {
     let didChange: Bool
 }
 
-final class TextCleaner {
-    func clean(_ text: String, settings: SettingsStore) -> CleanResult {
+enum TextCleaner {
+    static func clean(_ text: String, settings: SettingsStore) -> CleanResult {
         var result = text
 
         if settings.stripTrailing {
@@ -28,25 +28,25 @@ final class TextCleaner {
         return CleanResult(cleaned: result, didChange: result != text)
     }
 
-    func stripTrailingWhitespace(_ text: String) -> String {
+    static func stripTrailingWhitespace(_ text: String) -> String {
         text.split(separator: "\n", omittingEmptySubsequences: false)
             .map { $0.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression) }
             .joined(separator: "\n")
     }
 
-    func collapseMultipleSpaces(_ text: String) -> String {
+    static func collapseMultipleSpaces(_ text: String) -> String {
         text.split(separator: "\n", omittingEmptySubsequences: false)
             .map { line in
                 let str = String(line)
-                let leadingSpaces = str.prefix(while: { $0 == " " || $0 == "\t" })
-                let rest = str.dropFirst(leadingSpaces.count)
-                let collapsed = rest.replacingOccurrences(of: "  +", with: " ", options: .regularExpression)
-                return leadingSpaces + collapsed
+                let leading = str.prefix(while: { $0 == " " || $0 == "\t" })
+                let rest = str.dropFirst(leading.count)
+                let collapsed = rest.replacingOccurrences(of: " {2,}", with: " ", options: .regularExpression)
+                return leading + collapsed
             }
             .joined(separator: "\n")
     }
 
-    func unwrapParagraphs(_ text: String) -> String {
+    static func unwrapParagraphs(_ text: String) -> String {
         let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         guard lines.count > 1 else { return text }
 
@@ -84,14 +84,14 @@ final class TextCleaner {
         return output.joined(separator: "\n")
     }
 
-    func trimCommonIndent(_ text: String) -> String {
+    static func trimCommonIndent(_ text: String) -> String {
         let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         guard !nonEmptyLines.isEmpty else { return text }
 
         let minIndent = nonEmptyLines
-            .map { $0.prefix(while: { $0 == " " }).count }
+            .map { $0.prefix(while: { $0.isWhitespace }).count }
             .min() ?? 0
 
         guard minIndent > 0 else { return text }
@@ -104,22 +104,21 @@ final class TextCleaner {
         }.joined(separator: "\n")
     }
 
-    func collapseConsecutiveBlankLines(_ text: String) -> String {
+    static func collapseConsecutiveBlankLines(_ text: String) -> String {
         text.replacingOccurrences(of: "\\n{3,}", with: "\n\n", options: .regularExpression)
     }
 
-    private func shouldJoin(previous: String, current: String, currentTrimmed: String) -> Bool {
+    private static func shouldJoin(previous: String, current: String, currentTrimmed: String) -> Bool {
         guard !previous.isEmpty else { return false }
         guard !previous.hasSuffix(":") else { return false }
         guard !previous.hasPrefix("```") else { return false }
 
         let hasLeadingSpace = current.first?.isWhitespace == true && !current.isEmpty && current != currentTrimmed
         guard hasLeadingSpace else { return false }
-
         guard !currentTrimmed.isEmpty else { return false }
 
-        let listPrefixes = ["- ", "* ", "+ ", "# "]
-        for prefix in listPrefixes {
+        let structuralPrefixes = ["- ", "* ", "+ ", "# "]
+        for prefix in structuralPrefixes {
             if currentTrimmed.hasPrefix(prefix) { return false }
         }
         if currentTrimmed.hasPrefix("`") { return false }

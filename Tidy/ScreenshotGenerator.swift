@@ -56,12 +56,10 @@ private struct ScreenshotToggle: View {
 }
 
 private struct ScreenshotView: View {
-    let supportURL = URL(string: "https://buymeacoffee.com/maferland")!
-
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Image(nsImage: MenuBarView.headerIcon)
+                Image(nsImage: AppIcon.tray)
                     .resizable()
                     .frame(width: 24, height: 24)
                 Text("Tidy")

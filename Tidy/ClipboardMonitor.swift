@@ -6,7 +6,6 @@ final class ClipboardMonitor: ObservableObject {
 
     let settings: SettingsStore
     private let provider: ClipboardProvider
-    private let cleaner: TextCleaner
     private let debounceInterval: TimeInterval
     private var timer: Timer?
     private var lastChangeCount: Int = 0
@@ -17,9 +16,8 @@ final class ClipboardMonitor: ObservableObject {
         set { settings.isEnabled = newValue }
     }
 
-    init(provider: ClipboardProvider = SystemClipboardProvider(), cleaner: TextCleaner = TextCleaner(), debounceInterval: TimeInterval = 0.3, settings: SettingsStore = SettingsStore()) {
+    init(provider: ClipboardProvider = SystemClipboardProvider(), debounceInterval: TimeInterval = 0.3, settings: SettingsStore = SettingsStore()) {
         self.provider = provider
-        self.cleaner = cleaner
         self.debounceInterval = debounceInterval
         self.settings = settings
     }
@@ -29,6 +27,7 @@ final class ClipboardMonitor: ObservableObject {
     }
 
     func start() {
+        stop()
         lastChangeCount = provider.changeCount
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkClipboard()
@@ -44,17 +43,16 @@ final class ClipboardMonitor: ObservableObject {
         guard isEnabled else { return }
 
         let currentCount = provider.changeCount
-
         guard currentCount != lastChangeCount else { return }
         lastChangeCount = currentCount
+
+        guard let text = provider.string() else { return }
 
         if let lastCleanedAt, Date().timeIntervalSince(lastCleanedAt) < debounceInterval {
             return
         }
 
-        guard let text = provider.string() else { return }
-
-        let result = cleaner.clean(text, settings: settings)
+        let result = TextCleaner.clean(text, settings: settings)
         guard result.didChange else { return }
 
         provider.setString(result.cleaned)
