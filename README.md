@@ -9,7 +9,7 @@
 ---
 
 <p align="center">
-  <img src="assets/popover.png" width="400" alt="Tidy menu bar popover showing transforms and status">
+  <img src="assets/popover.png" width="280" alt="Tidy menu bar popover showing transforms and status">
 </p>
 
 ## Why?
