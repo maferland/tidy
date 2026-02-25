@@ -23,3 +23,11 @@ jobs:
             --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update homebrew tap
+        env:
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          DMG="Tidy-${VERSION}-macos.dmg"
+          ./scripts/update_homebrew_tap.sh "$VERSION" "$DMG"
