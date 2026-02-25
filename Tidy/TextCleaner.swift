@@ -29,17 +29,16 @@ enum TextCleaner {
     }
 
     static func stripTrailingWhitespace(_ text: String) -> String {
-        text.split(separator: "\n", omittingEmptySubsequences: false)
+        text.components(separatedBy: "\n")
             .map { $0.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression) }
             .joined(separator: "\n")
     }
 
     static func collapseMultipleSpaces(_ text: String) -> String {
-        text.split(separator: "\n", omittingEmptySubsequences: false)
+        text.components(separatedBy: "\n")
             .map { line in
-                let str = String(line)
-                let leading = str.prefix(while: { $0 == " " || $0 == "\t" })
-                let rest = str.dropFirst(leading.count)
+                let leading = line.prefix(while: { $0 == " " || $0 == "\t" })
+                let rest = line.dropFirst(leading.count)
                 let collapsed = rest.replacingOccurrences(of: " {2,}", with: " ", options: .regularExpression)
                 return leading + collapsed
             }
@@ -47,7 +46,7 @@ enum TextCleaner {
     }
 
     static func unwrapParagraphs(_ text: String) -> String {
-        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let lines = text.components(separatedBy: "\n")
         guard lines.count > 1 else { return text }
 
         var output: [String] = []
@@ -85,7 +84,7 @@ enum TextCleaner {
     }
 
     static func trimCommonIndent(_ text: String) -> String {
-        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let lines = text.components(separatedBy: "\n")
 
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         guard !nonEmptyLines.isEmpty else { return text }
