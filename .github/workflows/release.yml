@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and package
+        run: ./scripts/package_app.sh ${{ github.ref_name }}
+
+      - name: Create release
+        run: |
+          gh release create ${{ github.ref_name }} \
+            Tidy-${{ github.ref_name }}-macos.dmg \
+            --title "Tidy ${{ github.ref_name }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
