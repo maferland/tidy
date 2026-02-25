@@ -21,11 +21,4 @@ enum LaunchAtLogin {
         }
     }
 
-    static func toggle() {
-        if isEnabled {
-            disable()
-        } else {
-            enable()
-        }
-    }
 }

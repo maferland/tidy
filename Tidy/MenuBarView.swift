@@ -14,7 +14,7 @@ struct MenuBarView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Image(nsImage: Self.headerIcon)
+                Image(nsImage: AppIcon.tray)
                     .resizable()
                     .frame(width: 24, height: 24)
                 Text("Tidy")
@@ -109,8 +109,7 @@ struct MenuBarView: View {
             Text(label)
             Spacer()
             Toggle("", isOn: isOn)
-                .toggleStyle(.switch)
-                .controlSize(.small)
+                .toggleStyle(CapsuleToggleStyle())
                 .labelsHidden()
         }
         .padding(.horizontal, 14)
@@ -118,13 +117,38 @@ struct MenuBarView: View {
     }
 }
 
-extension MenuBarView {
-    static var headerIcon: NSImage {
+enum AppIcon {
+    static var tray: NSImage {
         if let url = Bundle.main.url(forResource: "tray", withExtension: "png", subdirectory: "Resources"),
            let img = NSImage(contentsOf: url) {
             return img
         }
         return NSImage(systemSymbolName: "text.justify.left", accessibilityDescription: "Tidy")!
+    }
+
+    static var menuBar: NSImage {
+        let icon = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { rect in
+            tray.draw(in: rect)
+            return true
+        }
+        icon.isTemplate = true
+        return icon
+    }
+}
+
+struct CapsuleToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Capsule()
+            .fill(configuration.isOn ? Color.green : Color.gray.opacity(0.3))
+            .frame(width: 26, height: 15)
+            .overlay(alignment: configuration.isOn ? .trailing : .leading) {
+                Circle()
+                    .fill(.white)
+                    .frame(width: 13, height: 13)
+                    .padding(.horizontal, 1)
+            }
+            .onTapGesture { configuration.isOn.toggle() }
+            .animation(.easeInOut(duration: 0.15), value: configuration.isOn)
     }
 }
 
