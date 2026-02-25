@@ -123,7 +123,7 @@ enum AppIcon {
            let img = NSImage(contentsOf: url) {
             return img
         }
-        return NSImage(systemSymbolName: "text.justify.left", accessibilityDescription: "Tidy")!
+        return NSImage(systemSymbolName: "text.justify.left", accessibilityDescription: "Tidy") ?? NSImage()
     }
 
     static var menuBar: NSImage {
@@ -136,17 +136,25 @@ enum AppIcon {
     }
 }
 
-struct CapsuleToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
+struct CapsuleIndicator: View {
+    let isOn: Bool
+
+    var body: some View {
         Capsule()
-            .fill(configuration.isOn ? Color.green : Color.gray.opacity(0.3))
+            .fill(isOn ? Color.green : Color.gray.opacity(0.3))
             .frame(width: 26, height: 15)
-            .overlay(alignment: configuration.isOn ? .trailing : .leading) {
+            .overlay(alignment: isOn ? .trailing : .leading) {
                 Circle()
                     .fill(.white)
                     .frame(width: 13, height: 13)
                     .padding(.horizontal, 1)
             }
+    }
+}
+
+struct CapsuleToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        CapsuleIndicator(isOn: configuration.isOn)
             .onTapGesture { configuration.isOn.toggle() }
             .animation(.easeInOut(duration: 0.15), value: configuration.isOn)
     }

@@ -1,6 +1,9 @@
+import os
 import ServiceManagement
 
 enum LaunchAtLogin {
+    private static let logger = Logger(subsystem: "com.maferland.Tidy", category: "LaunchAtLogin")
+
     static var isEnabled: Bool {
         SMAppService.mainApp.status == .enabled
     }
@@ -9,7 +12,7 @@ enum LaunchAtLogin {
         do {
             try SMAppService.mainApp.register()
         } catch {
-            print("Failed to enable launch at login: \(error)")
+            logger.error("Failed to enable launch at login: \(error.localizedDescription)")
         }
     }
 
@@ -17,8 +20,7 @@ enum LaunchAtLogin {
         do {
             try SMAppService.mainApp.unregister()
         } catch {
-            print("Failed to disable launch at login: \(error)")
+            logger.error("Failed to disable launch at login: \(error.localizedDescription)")
         }
     }
-
 }

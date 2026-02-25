@@ -7,16 +7,21 @@ final class MockClipboardProvider: ClipboardProvider {
     private var _string: String?
     var lastSetString: String?
     var setStringCallCount = 0
+    var alwaysReturnNil = false
 
     var changeCount: Int { _changeCount }
 
-    func string() -> String? { _string }
+    func string() -> String? { alwaysReturnNil ? nil : _string }
 
     func setString(_ string: String) {
         _string = string
         _changeCount += 1
         lastSetString = string
         setStringCallCount += 1
+    }
+
+    func simulateExternalChange() {
+        _changeCount += 1
     }
 }
 
@@ -74,12 +79,22 @@ struct ClipboardMonitorTests {
         let settings = makeTestSettings()
         let monitor = ClipboardMonitor(provider: provider, debounceInterval: 0, settings: settings)
         monitor.isEnabled = true
-        // Provider has no string set, changeCount incremented manually
-        provider.setString("hello   ")
-        // Clear the string by reading internals — simulate nil clipboard
-        // Just verify no crash when clipboard has content
+        provider.alwaysReturnNil = true
+        provider.simulateExternalChange()
         monitor.checkClipboard()
-        #expect(provider.lastSetString == "hello")
+        #expect(provider.setStringCallCount == 0)
+    }
+
+    @Test("skips clipboard content over 1MB")
+    func largeClipboardSkipped() {
+        let provider = MockClipboardProvider()
+        let settings = makeTestSettings()
+        let monitor = ClipboardMonitor(provider: provider, debounceInterval: 0, settings: settings)
+        monitor.isEnabled = true
+        let largeText = String(repeating: "a ", count: 600_000)
+        provider.setString(largeText)
+        monitor.checkClipboard()
+        #expect(provider.setStringCallCount == 1)
     }
 
     @Test("start then stop prevents further checks")
