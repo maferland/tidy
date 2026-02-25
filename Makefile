@@ -1,0 +1,30 @@
+.PHONY: build test release install clean app
+
+VERSION ?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+NEXT_VERSION ?= $(VERSION)
+
+build:
+	swift build -c release
+
+test:
+	swift test
+
+app: test
+	./scripts/package_app.sh $(NEXT_VERSION)
+
+install: app
+	cp -R Tidy.app /Applications/
+	@echo "Installed Tidy.app to /Applications"
+
+clean:
+	rm -rf .build *.dmg Tidy.app
+
+release: app
+	@if [ "$(VERSION)" = "$(NEXT_VERSION)" ]; then \
+		echo "Error: specify NEXT_VERSION=vX.Y.Z"; exit 1; \
+	fi
+	gh release create $(NEXT_VERSION) Tidy-$(NEXT_VERSION)-macos.dmg \
+		--title "Tidy $(NEXT_VERSION)" \
+		--generate-notes
+	@rm Tidy-$(NEXT_VERSION)-macos.dmg
+	@echo "Released: https://github.com/maferland/tidy/releases/tag/$(NEXT_VERSION)"
