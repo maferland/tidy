@@ -106,12 +106,12 @@ struct MenuBarView: View {
 
     private func toggleRow(isOn: Binding<Bool>, label: String) -> some View {
         HStack {
+            Text(label)
+            Spacer()
             Toggle("", isOn: isOn)
                 .toggleStyle(.switch)
                 .controlSize(.small)
                 .labelsHidden()
-            Text(label)
-            Spacer()
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
