@@ -75,7 +75,7 @@ final class TextCleaner {
             let prevTrimmed = prev.trimmingCharacters(in: .whitespaces)
 
             if shouldJoin(previous: prevTrimmed, current: line, currentTrimmed: trimmed) {
-                output[output.count - 1] = prevTrimmed + " " + trimmed
+                output[output.count - 1] = prev + " " + trimmed
             } else {
                 output.append(line)
             }
@@ -87,12 +87,11 @@ final class TextCleaner {
     func trimCommonIndent(_ text: String) -> String {
         let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
 
-        let minIndent = lines
-            .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-            .compactMap { line -> Int? in
-                let spaces = line.prefix(while: { $0 == " " }).count
-                return spaces > 0 ? spaces : nil
-            }
+        let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        guard !nonEmptyLines.isEmpty else { return text }
+
+        let minIndent = nonEmptyLines
+            .map { $0.prefix(while: { $0 == " " }).count }
             .min() ?? 0
 
         guard minIndent > 0 else { return text }

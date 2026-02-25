@@ -7,7 +7,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Tidy",
-            path: "Tidy"
+            path: "Tidy",
+            resources: [.copy("Resources")]
         ),
         .testTarget(
             name: "TidyTests",

@@ -14,9 +14,9 @@ struct MenuBarView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Image(systemName: "text.justify.left")
-                    .font(.title2)
-                    .foregroundStyle(.primary)
+                Image(nsImage: Self.headerIcon)
+                    .resizable()
+                    .frame(width: 24, height: 24)
                 Text("Tidy")
                     .font(.headline)
                 Text(appVersion)
@@ -115,6 +115,16 @@ struct MenuBarView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
+    }
+}
+
+extension MenuBarView {
+    static var headerIcon: NSImage {
+        if let url = Bundle.main.url(forResource: "tray", withExtension: "png", subdirectory: "Resources"),
+           let img = NSImage(contentsOf: url) {
+            return img
+        }
+        return NSImage(systemSymbolName: "text.justify.left", accessibilityDescription: "Tidy")!
     }
 }
 

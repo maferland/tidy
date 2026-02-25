@@ -239,7 +239,13 @@ struct PipelineTests {
     @Test("respects disabled transforms")
     func disabledTransforms() {
         let input = "hello   "
-        let settings = makeTestSettings(stripTrailing: false)
+        let settings = makeTestSettings(
+            stripTrailing: false,
+            collapseSpaces: false,
+            unwrapParagraphs: false,
+            trimIndent: false,
+            collapseBlankLines: false
+        )
         let result = cleaner.clean(input, settings: settings)
         #expect(result.cleaned == "hello   ")
         #expect(!result.didChange)
