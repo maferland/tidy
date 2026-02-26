@@ -37,7 +37,7 @@ enum TextCleaner {
     static func collapseMultipleSpaces(_ text: String) -> String {
         text.components(separatedBy: "\n")
             .map { line in
-                let leading = line.prefix(while: { $0 == " " || $0 == "\t" })
+                let leading = String(line.prefix(while: { $0 == " " || $0 == "\t" }))
                 let rest = line.dropFirst(leading.count)
                 let collapsed = rest.replacingOccurrences(of: " {2,}", with: " ", options: .regularExpression)
                 return leading + collapsed
