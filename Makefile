@@ -12,7 +12,8 @@ test:
 app: test
 	./scripts/package_app.sh $(NEXT_VERSION)
 
-install: app
+install: test
+	doppler run -p tidy -c prd -- ./scripts/package_app.sh $(NEXT_VERSION)
 	cp -R Tidy.app /Applications/
 	@echo "Installed Tidy.app to /Applications"
 

@@ -12,13 +12,15 @@ enum TextCleaner {
         if settings.stripTrailing {
             result = stripTrailingWhitespace(result)
         }
+
+        let isShellContinuation = result.contains("\\\n")
         if settings.collapseSpaces {
             result = collapseMultipleSpaces(result)
         }
-        if settings.unwrapParagraphs {
+        if settings.unwrapParagraphs && !isShellContinuation {
             result = unwrapParagraphs(result)
         }
-        if settings.trimIndent {
+        if settings.trimIndent && !isShellContinuation {
             result = trimCommonIndent(result)
         }
         if settings.collapseBlankLines {

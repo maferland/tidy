@@ -41,23 +41,6 @@ struct MenuBarView: View {
 
             Divider()
 
-            if !settings.history.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Recent")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.top, 6)
-
-                    ForEach(settings.history) { entry in
-                        historyRow(entry)
-                    }
-                }
-                .padding(.bottom, 6)
-
-                Divider()
-            }
-
             VStack(alignment: .leading, spacing: 4) {
                 toggleRow(isOn: $settings.isEnabled, label: "Enabled")
                 toggleRow(isOn: $launchAtLogin, label: "Start at Login")
@@ -113,28 +96,6 @@ struct MenuBarView: View {
             }
         }
         .frame(width: 220)
-    }
-
-    private func historyRow(_ entry: CleanEntry) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 4) {
-                Text(entry.original.prefix(30).replacingOccurrences(of: "\n", with: " "))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Text("\u{2192}")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                Text(entry.cleaned.prefix(30).replacingOccurrences(of: "\n", with: " "))
-                    .font(.caption2)
-                    .lineLimit(1)
-            }
-            Text(entry.timestamp, style: .relative)
-                .font(.system(size: 9))
-                .foregroundStyle(.tertiary)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 3)
     }
 
     private func toggleRow(isOn: Binding<Bool>, label: String) -> some View {
