@@ -17,11 +17,20 @@ struct MenuBarView: View {
                 Image(nsImage: AppIcon.tray)
                     .resizable()
                     .frame(width: 24, height: 24)
-                Text("Tidy")
-                    .font(.headline)
-                Text(appVersion)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 4) {
+                        Text("Tidy")
+                            .font(.headline)
+                        Text(appVersion)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                    if settings.totalCleans > 0 {
+                        Text("\(settings.totalCleans) cleans")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
                 Circle()
                     .fill(settings.isEnabled ? .green : .gray.opacity(0.5))
@@ -32,17 +41,19 @@ struct MenuBarView: View {
 
             Divider()
 
-            if let result = monitor.lastResult, result.didChange {
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                    Text("Cleaned clipboard text")
+            if !settings.history.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Recent")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Spacer()
+                        .padding(.horizontal, 14)
+                        .padding(.top, 6)
+
+                    ForEach(settings.history) { entry in
+                        historyRow(entry)
+                    }
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.bottom, 6)
 
                 Divider()
             }
@@ -102,6 +113,28 @@ struct MenuBarView: View {
             }
         }
         .frame(width: 220)
+    }
+
+    private func historyRow(_ entry: CleanEntry) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Text(entry.original.prefix(30).replacingOccurrences(of: "\n", with: " "))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Text("\u{2192}")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                Text(entry.cleaned.prefix(30).replacingOccurrences(of: "\n", with: " "))
+                    .font(.caption2)
+                    .lineLimit(1)
+            }
+            Text(entry.timestamp, style: .relative)
+                .font(.system(size: 9))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 3)
     }
 
     private func toggleRow(isOn: Binding<Bool>, label: String) -> some View {
