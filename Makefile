@@ -26,5 +26,6 @@ release: app
 	gh release create $(NEXT_VERSION) Tidy-$(NEXT_VERSION)-macos.dmg \
 		--title "Tidy $(NEXT_VERSION)" \
 		--generate-notes
+	./scripts/update_homebrew_tap.sh $(NEXT_VERSION) Tidy-$(NEXT_VERSION)-macos.dmg
 	@rm Tidy-$(NEXT_VERSION)-macos.dmg
 	@echo "Released: https://github.com/maferland/tidy/releases/tag/$(NEXT_VERSION)"

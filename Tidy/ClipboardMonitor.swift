@@ -59,6 +59,7 @@ final class ClipboardMonitor: ObservableObject {
         provider.setString(result.cleaned)
         lastChangeCount = provider.changeCount
         lastCleanedAt = Date()
+        settings.addCleanEntry(original: text, cleaned: result.cleaned)
 
         DispatchQueue.main.async {
             self.lastResult = result
