@@ -47,6 +47,7 @@ final class ClipboardMonitor: ObservableObject {
         lastChangeCount = currentCount
 
         guard let text = provider.string() else { return }
+        guard text.utf8.count <= 1_000_000 else { return }
 
         if let lastCleanedAt, Date().timeIntervalSince(lastCleanedAt) < debounceInterval {
             return

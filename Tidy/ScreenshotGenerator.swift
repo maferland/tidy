@@ -2,8 +2,16 @@ import AppKit
 import SwiftUI
 
 enum ScreenshotGenerator {
+    private static var version: String {
+        if let content = try? String(contentsOfFile: "VERSION", encoding: .utf8) {
+            let v = content.trimmingCharacters(in: .whitespacesAndNewlines)
+            return v.hasPrefix("v") ? v : "v\(v)"
+        }
+        return "v1.0.0"
+    }
+
     @MainActor static func generate(outputPath: String, scale: CGFloat = 3.0) {
-        let view = ScreenshotView()
+        let view = ScreenshotView(version: version)
             .background(Color(nsColor: .windowBackgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .padding(4)
@@ -32,30 +40,9 @@ enum ScreenshotGenerator {
     }
 }
 
-private struct ScreenshotToggle: View {
-    let label: String
-    let isOn: Bool
-
-    var body: some View {
-        HStack {
-            Text(label)
-            Spacer()
-            Capsule()
-                .fill(isOn ? Color.green : Color.gray.opacity(0.3))
-                .frame(width: 26, height: 15)
-                .overlay(alignment: isOn ? .trailing : .leading) {
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 13, height: 13)
-                        .padding(.horizontal, 1)
-                }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
-    }
-}
-
 private struct ScreenshotView: View {
+    let version: String
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -64,7 +51,7 @@ private struct ScreenshotView: View {
                     .frame(width: 24, height: 24)
                 Text("Tidy")
                     .font(.headline)
-                Text("v1.0.0")
+                Text(version)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                 Spacer()
@@ -91,8 +78,8 @@ private struct ScreenshotView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                ScreenshotToggle(label: "Enabled", isOn: true)
-                ScreenshotToggle(label: "Start at Login", isOn: false)
+                toggleRow("Enabled", isOn: true)
+                toggleRow("Start at Login", isOn: false)
             }
             .padding(.vertical, 6)
 
@@ -105,11 +92,11 @@ private struct ScreenshotView: View {
                     .padding(.horizontal, 14)
                     .padding(.top, 6)
 
-                ScreenshotToggle(label: "Strip trailing ws", isOn: true)
-                ScreenshotToggle(label: "Collapse spaces", isOn: true)
-                ScreenshotToggle(label: "Unwrap paragraphs", isOn: true)
-                ScreenshotToggle(label: "Trim indent", isOn: true)
-                ScreenshotToggle(label: "Collapse blanks", isOn: true)
+                toggleRow("Strip trailing ws", isOn: true)
+                toggleRow("Collapse spaces", isOn: true)
+                toggleRow("Unwrap paragraphs", isOn: true)
+                toggleRow("Trim indent", isOn: true)
+                toggleRow("Collapse blanks", isOn: true)
             }
             .padding(.bottom, 6)
 
@@ -135,5 +122,15 @@ private struct ScreenshotView: View {
             }
         }
         .frame(width: 220)
+    }
+
+    private func toggleRow(_ label: String, isOn: Bool) -> some View {
+        HStack {
+            Text(label)
+            Spacer()
+            CapsuleIndicator(isOn: isOn)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
     }
 }

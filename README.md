@@ -20,6 +20,12 @@ Tidy fixes it automatically. Copy text, paste clean text. No action needed.
 
 ## Install
 
+**Homebrew** (recommended):
+```bash
+brew tap maferland/tap
+brew install --cask tidy
+```
+
 **Build from source**:
 ```bash
 git clone https://github.com/maferland/tidy.git

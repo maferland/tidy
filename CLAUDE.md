@@ -13,14 +13,14 @@ make install  # app + copy to /Applications
 
 ## Architecture
 
-- `TextCleaner` — 5-stage pipeline: strip trailing ws, collapse spaces, unwrap paragraphs, trim indent, collapse blanks
-- `ClipboardMonitor` — polls NSPasteboard every 0.5s, debounces, calls TextCleaner
+- `TextCleaner` — enum with static methods; 5-stage pipeline: strip trailing ws, collapse spaces, unwrap paragraphs, trim indent, collapse blanks
+- `ClipboardMonitor` — polls NSPasteboard every 0.5s, debounces, calls TextCleaner, skips >1MB
 - `SettingsStore` — per-transform toggles persisted in UserDefaults
 - `ClipboardProvider` — protocol for testability (shared with snip)
 
 ## Testing
 
-38 tests. `TextCleanerTests` covers each transform individually + full pipeline integration. `ClipboardMonitorTests` covers enable/disable, debounce, no-op on clean text.
+56 tests. `TextCleanerTests` covers each transform individually + full pipeline integration. `ClipboardMonitorTests` covers enable/disable, debounce, nil clipboard, large clipboard, no-op on clean text.
 
 ## Constraints
 
