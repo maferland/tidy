@@ -192,6 +192,7 @@ struct UnwrapParagraphsTests {
         let input = "Hello world\n  with emoji test"
         #expect(TextCleaner.unwrapParagraphs(input) == "Hello world with emoji test")
     }
+
 }
 
 // MARK: - Trim common indent
@@ -335,5 +336,21 @@ struct PipelineTests {
     func singleChar() {
         let result = TextCleaner.clean("x", settings: makeTestSettings())
         #expect(!result.didChange)
+    }
+
+    @Test("skips unwrap and trimIndent for backslash continuations")
+    func shellContinuation() {
+        let input = "curl -s https://example.com \\\n    -u \"key:\" \\\n    -d \"type=card\" \\\n    -d \"num=123\""
+        let result = TextCleaner.clean(input, settings: makeTestSettings())
+        #expect(result.cleaned == input)
+        #expect(!result.didChange)
+    }
+
+    @Test("still strips trailing whitespace in shell commands")
+    func shellStillStrips() {
+        let input = "curl -s https://example.com \\  \n    -d \"type=card\""
+        let result = TextCleaner.clean(input, settings: makeTestSettings())
+        #expect(result.cleaned == "curl -s https://example.com \\\n    -d \"type=card\"")
+        #expect(result.didChange)
     }
 }
