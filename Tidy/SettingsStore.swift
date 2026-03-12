@@ -22,9 +22,6 @@ final class SettingsStore: ObservableObject {
     @Published var collapseBlankLines: Bool {
         didSet { userDefaults.set(collapseBlankLines, forKey: "transform.collapseBlankLines") }
     }
-    @Published var stripTrackingParams: Bool {
-        didSet { userDefaults.set(stripTrackingParams, forKey: "transform.stripTrackingParams") }
-    }
     @Published var totalCleans: Int {
         didSet { userDefaults.set(totalCleans, forKey: "stats.totalCleans") }
     }
@@ -44,7 +41,6 @@ final class SettingsStore: ObservableObject {
         self.unwrapParagraphs = Self.bool(for: "transform.unwrapParagraphs", default: true, in: userDefaults)
         self.trimIndent = Self.bool(for: "transform.trimIndent", default: true, in: userDefaults)
         self.collapseBlankLines = Self.bool(for: "transform.collapseBlankLines", default: true, in: userDefaults)
-        self.stripTrackingParams = Self.bool(for: "transform.stripTrackingParams", default: true, in: userDefaults)
         self.totalCleans = userDefaults.integer(forKey: "stats.totalCleans")
         if let data = userDefaults.data(forKey: "stats.history"),
            let decoded = try? JSONDecoder().decode([CleanEntry].self, from: data) {

@@ -64,7 +64,6 @@ struct MenuBarView: View {
                 toggleRow(isOn: $settings.unwrapParagraphs, label: "Unwrap paragraphs")
                 toggleRow(isOn: $settings.trimIndent, label: "Trim indent")
                 toggleRow(isOn: $settings.collapseBlankLines, label: "Collapse blanks")
-                toggleRow(isOn: $settings.stripTrackingParams, label: "Strip URL trackers")
             }
             .padding(.bottom, 6)
 
