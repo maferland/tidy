@@ -7,7 +7,8 @@ func makeTestSettings(
     collapseSpaces: Bool = true,
     unwrapParagraphs: Bool = true,
     trimIndent: Bool = true,
-    collapseBlankLines: Bool = true
+    collapseBlankLines: Bool = true,
+    stripTrackingParams: Bool = true
 ) -> SettingsStore {
     let store = SettingsStore(userDefaults: UserDefaults(suiteName: "test-\(UUID().uuidString)")!)
     store.stripTrailing = stripTrailing
@@ -15,6 +16,7 @@ func makeTestSettings(
     store.unwrapParagraphs = unwrapParagraphs
     store.trimIndent = trimIndent
     store.collapseBlankLines = collapseBlankLines
+    store.stripTrackingParams = stripTrackingParams
     return store
 }
 
@@ -266,6 +268,70 @@ struct CollapseBlankLinesTests {
     }
 }
 
+// MARK: - Strip tracking params
+
+@Suite("TextCleaner — strip tracking params")
+struct StripTrackingParamsTests {
+    @Test("removes rcm from LinkedIn URL")
+    func linkedInRcm() {
+        let input = "https://www.linkedin.com/posts/someone_title-7437434800073842688-9YKq?rcm=ACoAABP-gQoBhJzibDr41pke-Zb4LG5gq6WIm5U"
+        let expected = "https://www.linkedin.com/posts/someone_title-7437434800073842688-9YKq"
+        #expect(TextCleaner.stripTrackingParams(input) == expected)
+    }
+
+    @Test("removes utm params")
+    func utmParams() {
+        let input = "https://example.com/page?utm_source=twitter&utm_medium=social&id=42"
+        let expected = "https://example.com/page?id=42"
+        #expect(TextCleaner.stripTrackingParams(input) == expected)
+    }
+
+    @Test("removes fbclid")
+    func fbclid() {
+        let input = "https://example.com/page?fbclid=abc123"
+        let expected = "https://example.com/page"
+        #expect(TextCleaner.stripTrackingParams(input) == expected)
+    }
+
+    @Test("preserves non-tracking params")
+    func preservesClean() {
+        let input = "https://example.com/page?id=42&tab=overview"
+        #expect(TextCleaner.stripTrackingParams(input) == input)
+    }
+
+    @Test("handles URL embedded in text")
+    func embeddedUrl() {
+        let input = "Check this out: https://example.com/page?fbclid=abc123 it's great"
+        let expected = "Check this out: https://example.com/page it's great"
+        #expect(TextCleaner.stripTrackingParams(input) == expected)
+    }
+
+    @Test("handles multiple URLs in text")
+    func multipleUrls() {
+        let input = "Link1: https://a.com?rcm=x Link2: https://b.com?gclid=y"
+        let expected = "Link1: https://a.com Link2: https://b.com"
+        #expect(TextCleaner.stripTrackingParams(input) == expected)
+    }
+
+    @Test("no-op on plain text")
+    func plainText() {
+        let input = "Just some plain text without URLs"
+        #expect(TextCleaner.stripTrackingParams(input) == input)
+    }
+
+    @Test("no-op on empty string")
+    func emptyString() {
+        #expect(TextCleaner.stripTrackingParams("") == "")
+    }
+
+    @Test("removes si param")
+    func siParam() {
+        let input = "https://open.spotify.com/track/123?si=abc456"
+        let expected = "https://open.spotify.com/track/123"
+        #expect(TextCleaner.stripTrackingParams(input) == expected)
+    }
+}
+
 // MARK: - Full pipeline
 
 @Suite("TextCleaner — full pipeline")
@@ -293,7 +359,8 @@ struct PipelineTests {
             collapseSpaces: false,
             unwrapParagraphs: false,
             trimIndent: false,
-            collapseBlankLines: false
+            collapseBlankLines: false,
+            stripTrackingParams: false
         )
         let result = TextCleaner.clean(input, settings: settings)
         #expect(result.cleaned == "hello   ")
@@ -304,6 +371,7 @@ struct PipelineTests {
         ("stripTrailing", "hello   ", "hello"),
         ("collapseSpaces", "hello  world", "hello world"),
         ("collapseBlankLines", "one\n\n\ntwo", "one\n\ntwo"),
+        ("stripTrackingParams", "https://example.com?utm_source=x", "https://example.com"),
     ])
     func individualTransform(name: String, input: String, expected: String) {
         let settings = makeTestSettings(
@@ -311,7 +379,8 @@ struct PipelineTests {
             collapseSpaces: name == "collapseSpaces",
             unwrapParagraphs: false,
             trimIndent: false,
-            collapseBlankLines: name == "collapseBlankLines"
+            collapseBlankLines: name == "collapseBlankLines",
+            stripTrackingParams: name == "stripTrackingParams"
         )
         let result = TextCleaner.clean(input, settings: settings)
         #expect(result.cleaned == expected)

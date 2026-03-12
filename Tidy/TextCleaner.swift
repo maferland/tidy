@@ -26,6 +26,9 @@ enum TextCleaner {
         if settings.collapseBlankLines {
             result = collapseConsecutiveBlankLines(result)
         }
+        if settings.stripTrackingParams {
+            result = stripTrackingParams(result)
+        }
 
         return CleanResult(cleaned: result, didChange: result != text)
     }
@@ -107,6 +110,37 @@ enum TextCleaner {
 
     static func collapseConsecutiveBlankLines(_ text: String) -> String {
         text.replacingOccurrences(of: "\\n{3,}", with: "\n\n", options: .regularExpression)
+    }
+
+    private static let trackingParams: Set<String> = [
+        "rcm", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+        "fbclid", "gclid", "dclid", "mc_cid", "mc_eid", "_ga", "_gl", "si",
+    ]
+
+    private static let linkDetector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+
+    static func stripTrackingParams(_ text: String) -> String {
+        guard let detector = linkDetector else { return text }
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = detector.matches(in: text, range: range).reversed()
+
+        var result = text
+        for match in matches {
+            guard let matchRange = Range(match.range, in: result),
+                  let url = match.url,
+                  var components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let queryItems = components.queryItems,
+                  queryItems.contains(where: { trackingParams.contains($0.name) })
+            else { continue }
+
+            components.queryItems = queryItems.filter { !trackingParams.contains($0.name) }
+            if components.queryItems?.isEmpty == true { components.queryItems = nil }
+
+            if let cleaned = components.url?.absoluteString {
+                result.replaceSubrange(matchRange, with: cleaned)
+            }
+        }
+        return result
     }
 
     private static func shouldJoin(previous: String, current: String, currentTrimmed: String) -> Bool {
