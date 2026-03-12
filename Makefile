@@ -19,13 +19,13 @@ install: app
 clean:
 	rm -rf .build *.dmg Tidy.app
 
-release: app
+# Usage: make release NEXT_VERSION=v1.2.0
+# Tags and pushes — CI handles build, sign, notarize, GitHub release, and homebrew tap.
+release: test
 	@if [ "$(VERSION)" = "$(NEXT_VERSION)" ]; then \
 		echo "Error: specify NEXT_VERSION=vX.Y.Z"; exit 1; \
 	fi
-	gh release create $(NEXT_VERSION) Tidy-$(NEXT_VERSION)-macos.dmg \
-		--title "Tidy $(NEXT_VERSION)" \
-		--generate-notes
-	./scripts/update_homebrew_tap.sh $(NEXT_VERSION) Tidy-$(NEXT_VERSION)-macos.dmg
-	@rm Tidy-$(NEXT_VERSION)-macos.dmg
-	@echo "Released: https://github.com/maferland/tidy/releases/tag/$(NEXT_VERSION)"
+	git tag $(NEXT_VERSION)
+	git push origin main $(NEXT_VERSION)
+	@echo "Tagged $(NEXT_VERSION) — CI will build, sign, notarize, and release."
+	@echo "Watch: gh run watch"
